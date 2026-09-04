@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
+import com.holidayaware.scheduler.common.BadRequestException;
 import com.holidayaware.scheduler.holiday.HolidayService;
 import com.holidayaware.scheduler.holiday.HolidayWindow;
 import com.holidayaware.scheduler.order.dto.CreateOrderRequest;
@@ -24,6 +25,10 @@ class WorkOrderService {
     }
 
     OrderResponse create(CreateOrderRequest request) {
+        if (request.dueDate().isBefore(request.startDate())) {
+            throw new BadRequestException("dueDate must not be before startDate");
+        }
+
         WorkOrder order = new WorkOrder(
                 request.productCode(),
                 request.quantity(),

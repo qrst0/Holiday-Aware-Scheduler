@@ -5,6 +5,8 @@ import java.util.List;
 import com.holidayaware.scheduler.order.dto.CreateOrderRequest;
 import com.holidayaware.scheduler.order.dto.OrderResponse;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +27,7 @@ class WorkOrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    OrderResponse create(@RequestBody CreateOrderRequest request) {
+    OrderResponse create(@Valid @RequestBody CreateOrderRequest request) {
         return service.create(request);
     }
 
