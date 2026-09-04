@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 
+import DevPanel from './components/DevPanel';
 import OrderBoard from './components/OrderBoard';
 import OrderDetail from './components/OrderDetail';
 
@@ -9,6 +10,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<OrderBoard />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
+        <Route path="/dev" element={<DevPanel />} />
       </Routes>
     </main>
   );

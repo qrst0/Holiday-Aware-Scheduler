@@ -576,3 +576,18 @@ tbody tr.row-link {
 .input-country::placeholder {
   text-transform: none;
 }
+
+.dev-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 4px;
+}
+
+.dev-count {
+  width: 84px;
+}
+
+.detail-card .muted {
+  margin-bottom: 4px;
+}

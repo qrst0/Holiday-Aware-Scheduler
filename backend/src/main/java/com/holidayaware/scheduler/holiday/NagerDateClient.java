@@ -21,14 +21,17 @@ class NagerDateClient {
     private static final Logger log = LoggerFactory.getLogger(NagerDateClient.class);
 
     private final RestClient restClient;
+    private final HolidayApiToggle toggle;
 
     NagerDateClient(
+            HolidayApiToggle toggle,
             @Value("${holiday.nager.base-url}") String baseUrl,
             @Value("${holiday.nager.connect-timeout}") Duration connectTimeout,
             @Value("${holiday.nager.read-timeout}") Duration readTimeout) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(connectTimeout);
         requestFactory.setReadTimeout(readTimeout);
+        this.toggle = toggle;
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl)
                 .requestFactory(requestFactory)
@@ -36,6 +39,10 @@ class NagerDateClient {
     }
 
     Optional<List<PublicHoliday>> fetchHolidays(String countryCode, int year) {
+        if (!toggle.isEnabled()) {
+            log.warn("nager lookup skipped for {} {}: api switched off", countryCode, year);
+            return Optional.empty();
+        }
         try {
             NagerHoliday[] response = restClient.get()
                     .uri("/api/v3/PublicHolidays/{year}/{countryCode}", year, countryCode)

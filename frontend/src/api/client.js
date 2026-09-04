@@ -70,3 +70,19 @@ export function bulkDeleteOrders(ids) {
 export function deleteOrder(id) {
   return request(`/orders/${id}`, { method: 'DELETE' });
 }
+
+export function fetchDevStatus() {
+  return request('/dev/status');
+}
+
+export function setHolidayApi(enabled) {
+  return request(`/dev/holiday-api${queryString({ enabled })}`, { method: 'POST' });
+}
+
+export function seedOrders(count) {
+  return request(`/dev/seed${queryString({ count })}`, { method: 'POST' });
+}
+
+export function clearHolidayCache() {
+  return request('/dev/holiday-cache', { method: 'DELETE' });
+}

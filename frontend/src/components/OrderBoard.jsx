@@ -185,6 +185,9 @@ export default function OrderBoard() {
               Delete {selectedCount}
             </button>
           ))}
+          <button className="btn" type="button" onClick={() => navigate('/dev')}>
+            Dev tools
+          </button>
           <button className="btn" type="button" onClick={load} disabled={loading}>
             Refresh
           </button>

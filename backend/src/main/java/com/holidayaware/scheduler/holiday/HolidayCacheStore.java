@@ -58,6 +58,27 @@ class HolidayCacheStore {
         holidaySyncRepository.save(sync);
     }
 
+    @Transactional
+    void clearAll() {
+        holidayCacheRepository.deleteAllInBatch();
+        holidaySyncRepository.deleteAllInBatch();
+    }
+
+    @Transactional
+    void clearFailureBackoff() {
+        holidaySyncRepository.expireFailedAttempts(LocalDateTime.now().minusYears(1));
+    }
+
+    @Transactional(readOnly = true)
+    long countCachedHolidays() {
+        return holidayCacheRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    long countTrackedCalendars() {
+        return holidaySyncRepository.count();
+    }
+
     private HolidaySync findOrCreateSync(String countryCode, int year) {
         return holidaySyncRepository.findById(new HolidaySync.Key(countryCode, year))
                 .orElseGet(() -> new HolidaySync(countryCode, year));
