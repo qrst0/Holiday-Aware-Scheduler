@@ -186,6 +186,26 @@ class HolidayServiceTest {
         verify(client, never()).fetchHolidays(anyString(), anyInt());
     }
 
+    @Test
+    @DisplayName("declines to suggest a due date when no holiday data is available")
+    void noSuggestionWithoutHolidayData() {
+        when(store.findSync(anyString(), anyInt())).thenReturn(Optional.empty());
+        when(client.fetchHolidays(anyString(), anyInt())).thenReturn(Optional.empty());
+        when(store.findHolidays(anyString(), anyInt())).thenReturn(List.of());
+
+        assertThat(holidayService.earliestSafeDueDate("JP", START, 20)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("suggests a due date once holidays are known")
+    void suggestsDueDateFromCachedHolidays() {
+        givenSync(sync -> sync.recordAnswer(LocalDateTime.now().minusDays(1), SyncOutcome.SUCCESS));
+        when(store.findHolidays(eq("ID"), anyInt())).thenReturn(List.of(NEW_YEAR));
+
+        assertThat(holidayService.earliestSafeDueDate("ID", START, 5))
+                .contains(LocalDate.of(2026, 1, 8));
+    }
+
     private void givenSync(java.util.function.Consumer<HolidaySync> setUp) {
         givenSync("ID", setUp);
     }

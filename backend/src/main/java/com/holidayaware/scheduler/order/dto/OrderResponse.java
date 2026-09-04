@@ -22,5 +22,6 @@ public record OrderResponse(
         int workingDays,
         HolidaySource holidaySource,
         List<PublicHoliday> holidaysInWindow,
+        LocalDate suggestedDueDate,
         LocalDateTime createdAt) {
 }

@@ -1,6 +1,7 @@
 package com.holidayaware.scheduler.holiday;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
@@ -97,5 +98,52 @@ class WorkingDayCalculatorTest {
                 Set.of(LocalDate.of(2027, 1, 1)));
 
         assertThat(workingDays).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("suggests the day the required working days are reached")
+    void suggestsEarliestDueDate() {
+        Optional<LocalDate> suggestion = WorkingDayCalculator.earliestDueDate(
+                LocalDate.of(2026, 1, 5), 5, NO_HOLIDAYS, LocalDate.of(2026, 3, 1));
+
+        assertThat(suggestion).contains(LocalDate.of(2026, 1, 9));
+    }
+
+    @Test
+    @DisplayName("pushes the suggestion past a weekend")
+    void suggestionSkipsWeekend() {
+        Optional<LocalDate> suggestion = WorkingDayCalculator.earliestDueDate(
+                LocalDate.of(2026, 1, 5), 6, NO_HOLIDAYS, LocalDate.of(2026, 3, 1));
+
+        assertThat(suggestion).contains(LocalDate.of(2026, 1, 12));
+    }
+
+    @Test
+    @DisplayName("pushes the suggestion past a holiday")
+    void suggestionSkipsHoliday() {
+        Optional<LocalDate> suggestion = WorkingDayCalculator.earliestDueDate(
+                LocalDate.of(2026, 1, 5), 5, Set.of(LocalDate.of(2026, 1, 7)),
+                LocalDate.of(2026, 3, 1));
+
+        assertThat(suggestion).contains(LocalDate.of(2026, 1, 12));
+    }
+
+    @Test
+    @DisplayName("lands on a working day, never a weekend")
+    void suggestionIsAlwaysAWorkingDay() {
+        Optional<LocalDate> suggestion = WorkingDayCalculator.earliestDueDate(
+                LocalDate.of(2026, 1, 5), 10, NO_HOLIDAYS, LocalDate.of(2026, 3, 1));
+
+        assertThat(suggestion).isPresent();
+        assertThat(WorkingDayCalculator.isWorkingDay(suggestion.get(), NO_HOLIDAYS)).isTrue();
+    }
+
+    @Test
+    @DisplayName("gives up when the horizon is too short")
+    void suggestionRespectsHorizon() {
+        Optional<LocalDate> suggestion = WorkingDayCalculator.earliestDueDate(
+                LocalDate.of(2026, 1, 5), 20, NO_HOLIDAYS, LocalDate.of(2026, 1, 9));
+
+        assertThat(suggestion).isEmpty();
     }
 }

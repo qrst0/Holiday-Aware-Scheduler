@@ -170,6 +170,15 @@ class WorkOrderService {
         return window.workingDays() < requiredDays ? RiskFlag.AT_RISK : RiskFlag.ON_TRACK;
     }
 
+    private LocalDate suggestedDueDateFor(WorkOrder order) {
+        if (order.getRiskFlag() != RiskFlag.AT_RISK) {
+            return null;
+        }
+        return holidayService
+                .earliestSafeDueDate(order.getCountryCode(), order.getStartDate(), order.getRequiredDays())
+                .orElse(null);
+    }
+
     private OrderResponse toResponse(WorkOrder order, HolidayWindow window) {
         return new OrderResponse(
                 order.getId(),
@@ -184,6 +193,7 @@ class WorkOrderService {
                 window.workingDays(),
                 window.source(),
                 window.holidays(),
+                suggestedDueDateFor(order),
                 order.getCreatedAt());
     }
 }

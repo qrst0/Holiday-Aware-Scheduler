@@ -61,6 +61,21 @@ public class HolidayService {
         return new HolidayWindow(workingDays, inWindow, source, fetchedAt);
     }
 
+    public Optional<LocalDate> earliestSafeDueDate(String countryCode, LocalDate start, int requiredDays) {
+        if (countryCode == null || start == null || requiredDays <= 0) {
+            return Optional.empty();
+        }
+        LocalDate horizon = start.plusDays(requiredDays * 2L + 45);
+        HolidayWindow window = evaluate(countryCode, start, horizon);
+        if (window.isUnavailable()) {
+            return Optional.empty();
+        }
+        Set<LocalDate> holidayDates = window.holidays().stream()
+                .map(PublicHoliday::date)
+                .collect(Collectors.toSet());
+        return WorkingDayCalculator.earliestDueDate(start, requiredDays, holidayDates, horizon);
+    }
+
     private YearLookup resolveYear(String country, int year) {
         LocalDateTime now = LocalDateTime.now();
         Optional<HolidaySync> syncRow = store.findSync(country, year);

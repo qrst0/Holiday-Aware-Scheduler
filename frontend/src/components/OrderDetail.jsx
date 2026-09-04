@@ -8,6 +8,11 @@ import SourceNotice from './SourceNotice';
 
 const STATUSES = ['PLANNED', 'IN_PROGRESS', 'DONE', 'CANCELLED'];
 
+function formatDate(isoDate) {
+  const [year, month, day] = isoDate.split('-');
+  return `${day}/${month}/${year}`;
+}
+
 function toForm(order) {
   return {
     productCode: order.productCode,
@@ -152,6 +157,12 @@ export default function OrderDetail() {
               <dt>Working days needed</dt>
               <dd className="mono cell-primary">{order.requiredDays}</dd>
             </div>
+            {order.suggestedDueDate && (
+              <div>
+                <dt>Earliest safe due date</dt>
+                <dd className="mono cell-primary">{formatDate(order.suggestedDueDate)}</dd>
+              </div>
+            )}
           </dl>
 
           <h2 className="section-title">Holidays in this window</h2>
