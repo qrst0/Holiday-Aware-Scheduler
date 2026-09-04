@@ -2,18 +2,24 @@ package com.holidayaware.scheduler.order;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import com.holidayaware.scheduler.common.BadRequestException;
 import com.holidayaware.scheduler.common.NotFoundException;
+import com.holidayaware.scheduler.common.PageResponse;
 import com.holidayaware.scheduler.holiday.HolidayService;
 import com.holidayaware.scheduler.holiday.HolidayWindow;
 import com.holidayaware.scheduler.order.dto.CreateOrderRequest;
 import com.holidayaware.scheduler.order.dto.OrderResponse;
 import com.holidayaware.scheduler.order.dto.UpdateOrderRequest;
 
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,10 +51,30 @@ class WorkOrderService {
         return toResponse(repository.save(order), window);
     }
 
-    List<OrderResponse> list() {
-        return repository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
+    PageResponse<OrderResponse> list(OrderStatus status, String countryCode, RiskFlag riskFlag,
+                                     Pageable pageable) {
+        Page<WorkOrder> page = repository.findAll(matching(status, countryCode, riskFlag), pageable);
+        List<OrderResponse> content = page.getContent().stream()
                 .map(this::refreshAndMap)
                 .toList();
+        return new PageResponse<>(content, page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.hasNext());
+    }
+
+    private Specification<WorkOrder> matching(OrderStatus status, String countryCode, RiskFlag riskFlag) {
+        return (root, query, builder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (status != null) {
+                predicates.add(builder.equal(root.get("status"), status));
+            }
+            if (countryCode != null) {
+                predicates.add(builder.equal(root.get("countryCode"), countryCode.toUpperCase(Locale.ROOT)));
+            }
+            if (riskFlag != null) {
+                predicates.add(builder.equal(root.get("riskFlag"), riskFlag));
+            }
+            return builder.and(predicates.toArray(new Predicate[0]));
+        };
     }
 
     OrderResponse get(Long id) {

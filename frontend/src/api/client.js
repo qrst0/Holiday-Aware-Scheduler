@@ -32,8 +32,11 @@ async function request(path, options) {
   return response.status === 204 ? null : response.json();
 }
 
-export function fetchOrders() {
-  return request('/orders');
+export function fetchOrders(params = {}) {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, value]) => value !== '' && value != null));
+  const suffix = query.toString() ? `?${query}` : '';
+  return request(`/orders${suffix}`).then((page) => page.content);
 }
 
 export function createOrder(order) {
