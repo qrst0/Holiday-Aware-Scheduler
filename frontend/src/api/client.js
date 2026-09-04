@@ -1,19 +1,27 @@
 const API_BASE = '/api';
 
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
+
+export class ApiError extends Error {
+  constructor(message, fieldErrors) {
+    super(message);
+    this.name = 'ApiError';
+    this.fieldErrors = fieldErrors ?? null;
+  }
+}
+
 async function toError(response) {
-  let message = `Request failed (${response.status})`;
   try {
     const problem = await response.json();
     if (problem.errors) {
-      message = Object.entries(problem.errors)
-        .map(([field, reason]) => `${field}: ${reason}`)
-        .join(', ');
-    } else if (problem.detail) {
-      message = problem.detail;
+      return new ApiError('Please correct the highlighted fields.', problem.errors);
+    }
+    if (problem.detail) {
+      return new ApiError(problem.detail);
     }
   } catch {
   }
-  return new Error(message);
+  return new ApiError(`Request failed (${response.status})`);
 }
 
 async function request(path, options) {
@@ -26,4 +34,12 @@ async function request(path, options) {
 
 export function fetchOrders() {
   return request('/orders');
+}
+
+export function createOrder(order) {
+  return request('/orders', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(order)
+  });
 }

@@ -1,7 +1,7 @@
 const VARIANTS = {
-  ON_TRACK: { className: 'badge badge-ok', label: 'On track' },
-  AT_RISK: { className: 'badge badge-risk', label: 'At risk' },
-  UNKNOWN: { className: 'badge badge-unknown', label: 'Unknown' }
+  ON_TRACK: { className: 'pill pill-ok', label: 'On track' },
+  AT_RISK: { className: 'pill pill-risk', label: 'At risk' },
+  UNKNOWN: { className: 'pill pill-neutral', label: 'Unknown' }
 };
 
 export default function RiskBadge({ flag }) {

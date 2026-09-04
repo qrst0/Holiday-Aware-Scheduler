@@ -2,8 +2,8 @@ import OrderBoard from './components/OrderBoard';
 
 export default function App() {
   return (
-    <div className="page">
+    <main className="content">
       <OrderBoard />
-    </div>
+    </main>
   );
 }
