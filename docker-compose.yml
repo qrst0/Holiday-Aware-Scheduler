@@ -16,5 +16,16 @@ services:
       timeout: 5s
       retries: 10
 
+  backend:
+    build: ./backend
+    container_name: scheduler-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+
 volumes:
   db-data:
