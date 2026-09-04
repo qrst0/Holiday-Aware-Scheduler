@@ -225,7 +225,6 @@ export default function OrderBoard() {
               placeholder="Search product code"
               aria-label="Search product code"
             />
-            <span className="kbd">Ctrl K</span>
           </div>
 
           <Pager

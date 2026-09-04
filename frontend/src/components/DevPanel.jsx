@@ -70,11 +70,6 @@ export default function DevPanel() {
       <div className="detail-grid">
         <section className="card detail-card">
           <h2 className="section-title">Holiday API</h2>
-          <p className="muted">
-            Switching this off makes every lookup fail exactly as a real outage does, so the board
-            falls back to cached holidays or to weekends only.
-          </p>
-
           <div className="dev-row">
             <span className={apiOn ? 'pill pill-ok' : 'pill pill-risk'}>
               {apiOn ? 'Reachable' : 'Switched off'}
@@ -119,11 +114,6 @@ export default function DevPanel() {
 
         <section className="card detail-card">
           <h2 className="section-title">Seed orders</h2>
-          <p className="muted">
-            Creates random orders through the normal create endpoint, across eight countries and a
-            spread of windows, so the board shows a realistic mix of flags.
-          </p>
-
           <dl className="facts">
             <div>
               <dt>Orders in the database</dt>

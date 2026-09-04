@@ -128,7 +128,7 @@ body {
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 7px 52px 7px 31px;
+  padding: 7px 11px 7px 31px;
 }
 
 .search-field input::placeholder {
@@ -139,14 +139,6 @@ body {
   outline: none;
   border-color: var(--focus);
   box-shadow: 0 0 0 2px rgba(0, 91, 211, 0.2);
-}
-
-.kbd {
-  position: absolute;
-  right: 9px;
-  color: var(--text-faint);
-  font-size: 11px;
-  pointer-events: none;
 }
 
 .checkbox-cell {
@@ -346,7 +338,6 @@ tbody tr:hover {
   }
 }
 
-/* Not `animation: none` — the exit needs animationend to fire for the form to unmount. */
 @media (prefers-reduced-motion: reduce) {
   .form-card,
   .form-card-closing {
