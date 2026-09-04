@@ -100,6 +100,17 @@ class WorkOrder {
         return riskFlag;
     }
 
+    void update(String productCode, int quantity, String countryCode, LocalDate startDate,
+                LocalDate dueDate, int requiredDays, OrderStatus status) {
+        this.productCode = productCode;
+        this.quantity = quantity;
+        this.countryCode = countryCode;
+        this.startDate = startDate;
+        this.dueDate = dueDate;
+        this.requiredDays = requiredDays;
+        this.status = status;
+    }
+
     void setRiskFlag(RiskFlag riskFlag) {
         this.riskFlag = riskFlag;
     }
