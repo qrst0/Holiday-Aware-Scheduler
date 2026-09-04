@@ -53,6 +53,7 @@ class NagerDateClient {
         } catch (HttpClientErrorException.NotFound e) {
             return Optional.of(List.of());
         } catch (RestClientException e) {
+            log.warn("nager lookup failed for {} {}: {}", countryCode, year, e.getMessage());
             return Optional.empty();
         }
     }
