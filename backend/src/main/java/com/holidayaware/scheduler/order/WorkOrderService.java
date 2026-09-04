@@ -3,6 +3,8 @@ package com.holidayaware.scheduler.order;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Locale;
 
@@ -11,6 +13,7 @@ import com.holidayaware.scheduler.common.NotFoundException;
 import com.holidayaware.scheduler.common.PageResponse;
 import com.holidayaware.scheduler.holiday.HolidayService;
 import com.holidayaware.scheduler.holiday.HolidayWindow;
+import com.holidayaware.scheduler.order.dto.BulkDeleteResponse;
 import com.holidayaware.scheduler.order.dto.CreateOrderRequest;
 import com.holidayaware.scheduler.order.dto.OrderResponse;
 import com.holidayaware.scheduler.order.dto.UpdateOrderRequest;
@@ -24,6 +27,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 class WorkOrderService {
+
+    private static final int MAX_BULK_DELETE = 100;
 
     private final WorkOrderRepository repository;
     private final HolidayService holidayService;
@@ -117,6 +122,20 @@ class WorkOrderService {
 
     void delete(Long id) {
         repository.delete(findOrThrow(id));
+    }
+
+    BulkDeleteResponse deleteAll(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new BadRequestException("ids must not be empty");
+        }
+        Set<Long> unique = new LinkedHashSet<>(ids);
+        if (unique.size() > MAX_BULK_DELETE) {
+            throw new BadRequestException("at most " + MAX_BULK_DELETE + " ids may be deleted at once");
+        }
+
+        List<WorkOrder> found = repository.findAllById(unique);
+        repository.deleteAll(found);
+        return new BulkDeleteResponse(unique.size(), found.size());
     }
 
     private WorkOrder findOrThrow(Long id) {

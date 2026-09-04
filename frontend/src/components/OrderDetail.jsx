@@ -53,7 +53,6 @@ export default function OrderDetail() {
     setSaved(false);
   };
 
-  // Only changed fields are sent, which is exactly what the PATCH endpoint expects.
   function changedFields() {
     const original = toForm(order);
     const patch = {};

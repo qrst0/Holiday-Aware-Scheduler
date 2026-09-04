@@ -1,6 +1,9 @@
 package com.holidayaware.scheduler.order;
 
+import java.util.List;
+
 import com.holidayaware.scheduler.common.PageResponse;
+import com.holidayaware.scheduler.order.dto.BulkDeleteResponse;
 import com.holidayaware.scheduler.order.dto.CreateOrderRequest;
 import com.holidayaware.scheduler.order.dto.OrderResponse;
 import com.holidayaware.scheduler.order.dto.UpdateOrderRequest;
@@ -55,6 +58,11 @@ class WorkOrderController {
     @PatchMapping("/{id}")
     OrderResponse update(@PathVariable Long id, @Valid @RequestBody UpdateOrderRequest request) {
         return service.update(id, request);
+    }
+
+    @DeleteMapping
+    BulkDeleteResponse deleteAll(@RequestParam(required = false) List<Long> ids) {
+        return service.deleteAll(ids);
     }
 
     @DeleteMapping("/{id}")

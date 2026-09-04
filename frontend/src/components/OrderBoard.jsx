@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { fetchOrders } from '../api/client';
+import { bulkDeleteOrders, fetchOrders } from '../api/client';
 import OrderForm from './OrderForm';
 import RiskBadge from './RiskBadge';
 
@@ -44,19 +44,24 @@ export default function OrderBoard() {
   const [countryCode, setCountryCode] = useState('');
   const [riskFlag, setRiskFlag] = useState('');
   const [page, setPage] = useState(0);
+  const [confirmingBulk, setConfirmingBulk] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const searchRef = useRef(null);
 
-  // Debounced so typing does not fire one request per keystroke.
   useEffect(() => {
     const timer = setTimeout(() => setAppliedSearch(search), 300);
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Any filter change invalidates the current page number.
   useEffect(() => {
     setPage(0);
   }, [appliedSearch, status, countryCode, riskFlag]);
+
+  useEffect(() => {
+    setSelected(new Set());
+    setConfirmingBulk(false);
+  }, [page, appliedSearch, status, countryCode, riskFlag]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -113,11 +118,26 @@ export default function OrderBoard() {
     setFormClosing(false);
   }
 
-  // With filters and paging on the server, a new order can belong on any page, so reload
-  // rather than splicing it into the rows currently on screen.
   function handleCreated() {
     closeForm();
     load();
+  }
+
+  function handleBulkDelete() {
+    const ids = orders.filter((order) => selected.has(order.id)).map((order) => order.id);
+    setDeleting(true);
+    bulkDeleteOrders(ids)
+      .then(() => {
+        setSelected(new Set());
+        setConfirmingBulk(false);
+        if (page > 0 && ids.length >= orders.length) {
+          setPage(page - 1);
+        } else {
+          load();
+        }
+      })
+      .catch((cause) => setError(cause.message))
+      .finally(() => setDeleting(false));
   }
 
   function toggleOne(id) {
@@ -148,6 +168,23 @@ export default function OrderBoard() {
       <div className="content-head">
         <h1 className="page-title">Work orders</h1>
         <div className="head-actions">
+          {selectedCount > 0 && (confirmingBulk ? (
+            <>
+              <span className="confirm-text">
+                Delete {selectedCount} {selectedCount === 1 ? 'order' : 'orders'}?
+              </span>
+              <button className="btn" type="button" onClick={() => setConfirmingBulk(false)} disabled={deleting}>
+                Cancel
+              </button>
+              <button className="btn btn-danger" type="button" onClick={handleBulkDelete} disabled={deleting}>
+                {deleting ? 'Deleting…' : 'Confirm delete'}
+              </button>
+            </>
+          ) : (
+            <button className="btn btn-danger" type="button" onClick={() => setConfirmingBulk(true)}>
+              Delete {selectedCount}
+            </button>
+          ))}
           <button className="btn" type="button" onClick={load} disabled={loading}>
             Refresh
           </button>
@@ -286,7 +323,6 @@ function OrderTable({ orders, selected, onToggleOne, onToggleAll, onOpen }) {
   const selectedCount = orders.filter((order) => selected.has(order.id)).length;
   const allSelected = selectedCount === orders.length;
 
-  // indeterminate is a DOM property with no JSX attribute, so it has to be set directly.
   useEffect(() => {
     if (headerRef.current) {
       headerRef.current.indeterminate = selectedCount > 0 && !allSelected;

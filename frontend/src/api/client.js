@@ -20,7 +20,6 @@ async function toError(response) {
       return new ApiError(problem.detail);
     }
   } catch {
-    // Not a problem+json body; fall through to the status-based message.
   }
   return new ApiError(`Request failed (${response.status})`);
 }
@@ -40,7 +39,6 @@ function queryString(params) {
   return query ? `?${query}` : '';
 }
 
-// Returns the whole page envelope; the board needs totalPages and hasNext, not just the rows.
 export function fetchOrders(params = {}) {
   return request(`/orders${queryString(params)}`);
 }
@@ -63,6 +61,10 @@ export function updateOrder(id, patch) {
     headers: JSON_HEADERS,
     body: JSON.stringify(patch)
   });
+}
+
+export function bulkDeleteOrders(ids) {
+  return request(`/orders${queryString({ ids: ids.join(',') })}`, { method: 'DELETE' });
 }
 
 export function deleteOrder(id) {
