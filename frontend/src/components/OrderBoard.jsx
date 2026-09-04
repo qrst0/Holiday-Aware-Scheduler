@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { fetchOrders } from '../api/client';
 import OrderForm from './OrderForm';
 import RiskBadge from './RiskBadge';
+
+const PAGE_SIZE = 10;
 
 const STATUS_LABELS = {
   PLANNED: 'Planned',
@@ -18,30 +21,59 @@ const STATUS_STYLES = {
   CANCELLED: 'pill pill-plain pill-neutral'
 };
 
+const EMPTY_PAGE = { content: [], page: 0, totalPages: 0, totalElements: 0, hasNext: false };
+
 function formatDate(isoDate) {
   const [year, month, day] = isoDate.split('-');
   return `${day}/${month}/${year}`;
 }
 
 export default function OrderBoard() {
-  const [orders, setOrders] = useState([]);
+  const navigate = useNavigate();
+
+  const [result, setResult] = useState(EMPTY_PAGE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formClosing, setFormClosing] = useState(false);
-  const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(() => new Set());
 
+  const [search, setSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const [status, setStatus] = useState('');
+  const [countryCode, setCountryCode] = useState('');
+  const [riskFlag, setRiskFlag] = useState('');
+  const [page, setPage] = useState(0);
+
   const searchRef = useRef(null);
+
+  // Debounced so typing does not fire one request per keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => setAppliedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Any filter change invalidates the current page number.
+  useEffect(() => {
+    setPage(0);
+  }, [appliedSearch, status, countryCode, riskFlag]);
 
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
-    fetchOrders()
-      .then(setOrders)
+    fetchOrders({
+      search: appliedSearch,
+      status,
+      countryCode,
+      riskFlag,
+      page,
+      size: PAGE_SIZE,
+      sort: 'id'
+    })
+      .then(setResult)
       .catch((cause) => setError(cause.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [appliedSearch, status, countryCode, riskFlag, page]);
 
   useEffect(load, [load]);
 
@@ -81,21 +113,12 @@ export default function OrderBoard() {
     setFormClosing(false);
   }
 
-  function handleCreated(created) {
-    setOrders((current) => [...current, created]);
+  // With filters and paging on the server, a new order can belong on any page, so reload
+  // rather than splicing it into the rows currently on screen.
+  function handleCreated() {
     closeForm();
+    load();
   }
-
-  const visible = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) {
-      return orders;
-    }
-    return orders.filter((order) =>
-      `${order.productCode} ${order.countryCode} ${order.status} ${order.riskFlag}`
-        .toLowerCase()
-        .includes(needle));
-  }, [orders, query]);
 
   function toggleOne(id) {
     setSelected((current) => {
@@ -111,22 +134,14 @@ export default function OrderBoard() {
 
   function toggleAll() {
     setSelected((current) =>
-      visible.every((order) => current.has(order.id))
+      result.content.every((order) => current.has(order.id))
         ? new Set()
-        : new Set(visible.map((order) => order.id)));
+        : new Set(result.content.map((order) => order.id)));
   }
 
-  const selectedCount = visible.filter((order) => selected.has(order.id)).length;
-
-  function resultNote() {
-    if (selectedCount > 0) {
-      return `${selectedCount} selected`;
-    }
-    if (query.trim()) {
-      return `${visible.length} of ${orders.length} matching`;
-    }
-    return `${orders.length} ${orders.length === 1 ? 'order' : 'orders'}`;
-  }
+  const orders = result.content;
+  const selectedCount = orders.filter((order) => selected.has(order.id)).length;
+  const filtered = Boolean(appliedSearch || status || countryCode || riskFlag);
 
   return (
     <>
@@ -165,27 +180,73 @@ export default function OrderBoard() {
             <input
               ref={searchRef}
               type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search orders"
-              aria-label="Search orders"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search product code"
+              aria-label="Search product code"
             />
             <span className="kbd">Ctrl K</span>
           </div>
 
-          {!loading && !error && <span className="result-note">{resultNote()}</span>}
+          <Pager
+            page={result.page}
+            totalPages={result.totalPages}
+            onPrev={() => setPage((current) => Math.max(0, current - 1))}
+            onNext={() => setPage((current) => current + 1)}
+          />
+
+          <div className="toolbar-filters">
+            <select
+              className="input input-sm"
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+              aria-label="Filter by status"
+            >
+              <option value="">All statuses</option>
+              {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+
+            <select
+              className="input input-sm"
+              value={riskFlag}
+              onChange={(event) => setRiskFlag(event.target.value)}
+              aria-label="Filter by risk"
+            >
+              <option value="">All risks</option>
+              <option value="ON_TRACK">On track</option>
+              <option value="AT_RISK">At risk</option>
+              <option value="UNKNOWN">Unknown</option>
+            </select>
+
+            <input
+              className="input input-sm input-country"
+              value={countryCode}
+              onChange={(event) => setCountryCode(event.target.value)}
+              placeholder="Country"
+              maxLength={2}
+              aria-label="Filter by country"
+            />
+          </div>
+
+          {!loading && !error && (
+            <span className="result-note">
+              {selectedCount > 0 ? `${selectedCount} selected` : `${result.totalElements} total`}
+            </span>
+          )}
         </div>
 
         {loading && <LoadingState />}
         {!loading && error && <ErrorState message={error} onRetry={load} />}
-        {!loading && !error && orders.length === 0 && <EmptyState />}
-        {!loading && !error && orders.length > 0 && visible.length === 0 && <NoMatchState query={query} />}
-        {!loading && !error && visible.length > 0 && (
+        {!loading && !error && orders.length === 0 && <EmptyState filtered={filtered} />}
+        {!loading && !error && orders.length > 0 && (
           <OrderTable
-            orders={visible}
+            orders={orders}
             selected={selected}
             onToggleOne={toggleOne}
             onToggleAll={toggleAll}
+            onOpen={(id) => navigate(`/orders/${id}`)}
           />
         )}
       </div>
@@ -193,7 +254,34 @@ export default function OrderBoard() {
   );
 }
 
-function OrderTable({ orders, selected, onToggleOne, onToggleAll }) {
+function Pager({ page, totalPages, onPrev, onNext }) {
+  const shown = totalPages === 0 ? 0 : page + 1;
+  return (
+    <div className="pager">
+      <button
+        className="btn btn-icon"
+        type="button"
+        onClick={onPrev}
+        disabled={page <= 0}
+        aria-label="Previous page"
+      >
+        &lsaquo;
+      </button>
+      <span className="pager-label mono">{shown} / {totalPages}</span>
+      <button
+        className="btn btn-icon"
+        type="button"
+        onClick={onNext}
+        disabled={totalPages === 0 || page >= totalPages - 1}
+        aria-label="Next page"
+      >
+        &rsaquo;
+      </button>
+    </div>
+  );
+}
+
+function OrderTable({ orders, selected, onToggleOne, onToggleAll, onOpen }) {
   const headerRef = useRef(null);
   const selectedCount = orders.filter((order) => selected.has(order.id)).length;
   const allSelected = selectedCount === orders.length;
@@ -231,8 +319,12 @@ function OrderTable({ orders, selected, onToggleOne, onToggleAll }) {
         </thead>
         <tbody>
           {orders.map((order) => (
-            <tr key={order.id} className={selected.has(order.id) ? 'row-selected' : undefined}>
-              <td className="checkbox-cell">
+            <tr
+              key={order.id}
+              className={selected.has(order.id) ? 'row-link row-selected' : 'row-link'}
+              onClick={() => onOpen(order.id)}
+            >
+              <td className="checkbox-cell" onClick={(event) => event.stopPropagation()}>
                 <input
                   type="checkbox"
                   checked={selected.has(order.id)}
@@ -281,20 +373,15 @@ function ErrorState({ message, onRetry }) {
   );
 }
 
-function EmptyState() {
+function EmptyState({ filtered }) {
   return (
     <div className="state">
-      <div className="state-title">No work orders yet</div>
-      <div>Add one to see its holiday-aware risk flag.</div>
-    </div>
-  );
-}
-
-function NoMatchState({ query }) {
-  return (
-    <div className="state">
-      <div className="state-title">No orders match &ldquo;{query.trim()}&rdquo;</div>
-      <div>Try a product code, country, status or risk flag.</div>
+      <div className="state-title">
+        {filtered ? 'No orders match these filters' : 'No work orders yet'}
+      </div>
+      <div>
+        {filtered ? 'Try clearing the search or filters.' : 'Add one to see its holiday-aware risk flag.'}
+      </div>
     </div>
   );
 }

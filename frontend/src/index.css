@@ -407,3 +407,172 @@ tbody tr:hover {
   gap: 8px;
   margin-top: 18px;
 }
+
+.card-toolbar {
+  flex-wrap: wrap;
+}
+
+.toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-sm {
+  padding: 6px 9px;
+  border-color: var(--border);
+}
+
+.input-country {
+  width: 84px;
+  text-transform: uppercase;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-icon {
+  padding: 5px 11px;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.pager-label {
+  min-width: 46px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+tbody tr.row-link {
+  cursor: pointer;
+}
+
+.link-back {
+  padding: 0;
+  margin-bottom: 4px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.link-back:hover {
+  color: var(--text);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.detail-card {
+  padding: 18px;
+}
+
+.section-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.detail-card .section-title + .section-title,
+.holiday-list + .section-title,
+.facts + .section-title {
+  margin-top: 22px;
+}
+
+.facts {
+  margin: 0;
+}
+
+.facts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.facts > div:last-child {
+  border-bottom: none;
+}
+
+.facts dt {
+  color: var(--text-muted);
+}
+
+.facts dd {
+  margin: 0;
+  text-align: right;
+}
+
+.holiday-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.holiday-list li {
+  display: flex;
+  gap: 14px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.holiday-list li:last-child {
+  border-bottom: none;
+}
+
+.muted {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.notice {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.notice-warn {
+  background: #fff5e6;
+  color: #8a5300;
+  border: 1px solid #f0d9b0;
+}
+
+.notice-ok {
+  margin-top: 14px;
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.btn-danger {
+  background: #8e1f0b;
+  border-color: #8e1f0b;
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #741808;
+}
+
+.confirm-text {
+  align-self: center;
+  margin-right: auto;
+  color: var(--text-muted);
+}
+
+.toolbar-filters select {
+  min-width: 132px;
+}
+
+.input-country::placeholder {
+  text-transform: none;
+}

@@ -39,11 +39,12 @@ class WorkOrderController {
 
     @GetMapping
     PageResponse<OrderResponse> list(
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) OrderStatus status,
             @RequestParam(required = false) String countryCode,
             @RequestParam(required = false) RiskFlag riskFlag,
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
-        return service.list(status, countryCode, riskFlag, pageable);
+        return service.list(search, status, countryCode, riskFlag, pageable);
     }
 
     @GetMapping("/{id}")

@@ -20,6 +20,7 @@ async function toError(response) {
       return new ApiError(problem.detail);
     }
   } catch {
+    // Not a problem+json body; fall through to the status-based message.
   }
   return new ApiError(`Request failed (${response.status})`);
 }
@@ -32,11 +33,20 @@ async function request(path, options) {
   return response.status === 204 ? null : response.json();
 }
 
+function queryString(params) {
+  const pairs = Object.entries(params).filter(
+    ([, value]) => value !== '' && value !== null && value !== undefined);
+  const query = new URLSearchParams(pairs).toString();
+  return query ? `?${query}` : '';
+}
+
+// Returns the whole page envelope; the board needs totalPages and hasNext, not just the rows.
 export function fetchOrders(params = {}) {
-  const query = new URLSearchParams(
-    Object.entries(params).filter(([, value]) => value !== '' && value != null));
-  const suffix = query.toString() ? `?${query}` : '';
-  return request(`/orders${suffix}`).then((page) => page.content);
+  return request(`/orders${queryString(params)}`);
+}
+
+export function fetchOrder(id) {
+  return request(`/orders/${id}`);
 }
 
 export function createOrder(order) {
@@ -45,4 +55,16 @@ export function createOrder(order) {
     headers: JSON_HEADERS,
     body: JSON.stringify(order)
   });
+}
+
+export function updateOrder(id, patch) {
+  return request(`/orders/${id}`, {
+    method: 'PATCH',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(patch)
+  });
+}
+
+export function deleteOrder(id) {
+  return request(`/orders/${id}`, { method: 'DELETE' });
 }

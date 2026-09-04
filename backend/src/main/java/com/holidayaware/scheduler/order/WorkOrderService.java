@@ -51,9 +51,9 @@ class WorkOrderService {
         return toResponse(repository.save(order), window);
     }
 
-    PageResponse<OrderResponse> list(OrderStatus status, String countryCode, RiskFlag riskFlag,
-                                     Pageable pageable) {
-        Page<WorkOrder> page = repository.findAll(matching(status, countryCode, riskFlag), pageable);
+    PageResponse<OrderResponse> list(String search, OrderStatus status, String countryCode,
+                                     RiskFlag riskFlag, Pageable pageable) {
+        Page<WorkOrder> page = repository.findAll(matching(search, status, countryCode, riskFlag), pageable);
         List<OrderResponse> content = page.getContent().stream()
                 .map(this::refreshAndMap)
                 .toList();
@@ -61,14 +61,22 @@ class WorkOrderService {
                 page.getTotalElements(), page.getTotalPages(), page.hasNext());
     }
 
-    private Specification<WorkOrder> matching(OrderStatus status, String countryCode, RiskFlag riskFlag) {
+    private Specification<WorkOrder> matching(String search, OrderStatus status, String countryCode,
+                                              RiskFlag riskFlag) {
         return (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
+            if (search != null && !search.isBlank()) {
+                predicates.add(builder.like(
+                        builder.lower(root.get("productCode")),
+                        "%" + search.trim().toLowerCase(Locale.ROOT) + "%"));
+            }
             if (status != null) {
                 predicates.add(builder.equal(root.get("status"), status));
             }
-            if (countryCode != null) {
-                predicates.add(builder.equal(root.get("countryCode"), countryCode.toUpperCase(Locale.ROOT)));
+            if (countryCode != null && !countryCode.isBlank()) {
+                predicates.add(builder.like(
+                        builder.lower(root.get("countryCode")),
+                        "%" + countryCode.trim().toLowerCase(Locale.ROOT) + "%"));
             }
             if (riskFlag != null) {
                 predicates.add(builder.equal(root.get("riskFlag"), riskFlag));
