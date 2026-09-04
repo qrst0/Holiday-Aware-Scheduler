@@ -25,6 +25,11 @@ class HolidayCacheStore {
     }
 
     @Transactional(readOnly = true)
+    List<HolidaySync> findAllSync() {
+        return holidaySyncRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
     List<PublicHoliday> findHolidays(String countryCode, int year) {
         return holidayCacheRepository.findByCountryCodeAndHolidayYearOrderByHolidayDate(countryCode, year)
                 .stream()
@@ -36,7 +41,7 @@ class HolidayCacheStore {
     LocalDateTime replaceHolidays(String countryCode, int year, List<PublicHoliday> holidays,
                                   SyncOutcome outcome) {
         LocalDateTime now = LocalDateTime.now();
-        holidayCacheRepository.deleteByCountryCodeAndHolidayYear(countryCode, year);
+        holidayCacheRepository.deleteCachedYear(countryCode, year);
         holidayCacheRepository.saveAll(holidays.stream()
                 .map(holiday -> new HolidayCache(countryCode, year, holiday.date(), holiday.name(), now))
                 .toList());

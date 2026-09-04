@@ -35,6 +35,7 @@ holiday:
   cache:
     ttl-days: 30
     retry-backoff: 15m
+    refresh-cron: "0 0 3 * * *"
 
 logging:
   level:

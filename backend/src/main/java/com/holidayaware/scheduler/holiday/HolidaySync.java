@@ -43,6 +43,14 @@ class HolidaySync {
         this.holidayYear = holidayYear;
     }
 
+    String getCountryCode() {
+        return countryCode;
+    }
+
+    int getHolidayYear() {
+        return holidayYear;
+    }
+
     LocalDateTime getLastAttemptAt() {
         return lastAttemptAt;
     }
