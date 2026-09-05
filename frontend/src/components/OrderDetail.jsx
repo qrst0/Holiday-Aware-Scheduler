@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { ApiError, deleteOrder, fetchOrder, updateOrder } from '../api/client';
+import CountrySelect from './CountrySelect';
 import HolidayList from './HolidayList';
 import RiskBadge from './RiskBadge';
 import SourceNotice from './SourceNotice';
@@ -177,7 +178,11 @@ export default function OrderDetail() {
             {field('quantity', 'Quantity',
               <input className="input" type="number" value={form.quantity} onChange={update('quantity')} />)}
             {field('countryCode', 'Country',
-              <input className="input" value={form.countryCode} onChange={update('countryCode')} maxLength={2} />)}
+              <CountrySelect
+                value={form.countryCode}
+                invalid={Boolean(fieldErrors.countryCode)}
+                onChange={(code) => { setForm({ ...form, countryCode: code }); setSaved(false); }}
+              />)}
             {field('startDate', 'Start date',
               <input className="input" type="date" value={form.startDate} onChange={update('startDate')} />)}
             {field('dueDate', 'Due date',

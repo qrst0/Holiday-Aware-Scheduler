@@ -15,7 +15,7 @@ const STATUS_LABELS = {
 };
 
 const STATUS_STYLES = {
-  PLANNED: 'pill pill-plain pill-info',
+  PLANNED: 'pill pill-plain pill-warn',
   IN_PROGRESS: 'pill pill-plain pill-info',
   DONE: 'pill pill-plain pill-ok',
   CANCELLED: 'pill pill-plain pill-neutral'
@@ -26,6 +26,34 @@ const EMPTY_PAGE = { content: [], page: 0, totalPages: 0, totalElements: 0, hasN
 function formatDate(isoDate) {
   const [year, month, day] = isoDate.split('-');
   return `${day}/${month}/${year}`;
+}
+
+// lastUpdated is sent as an instant with an offset, so the browser resolves it to local time
+// regardless of the timezone the server runs in.
+function relativeTime(instant) {
+  const then = new Date(instant);
+  const minutes = Math.floor((Date.now() - then.getTime()) / 60000);
+
+  if (minutes < 1) {
+    return 'Now';
+  }
+  if (minutes < 60) {
+    return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  }
+
+  const days = Math.floor(hours / 24);
+  if (days === 1) {
+    return 'Yesterday';
+  }
+  if (days < 7) {
+    return `${days} days ago`;
+  }
+  return formatDate(then.toISOString().slice(0, 10));
 }
 
 export default function OrderBoard() {
@@ -72,8 +100,7 @@ export default function OrderBoard() {
       countryCode,
       riskFlag,
       page,
-      size: PAGE_SIZE,
-      sort: 'id'
+      size: PAGE_SIZE
     })
       .then(setResult)
       .catch((cause) => setError(cause.message))
@@ -353,6 +380,7 @@ function OrderTable({ orders, selected, onToggleOne, onToggleAll, onOpen }) {
             <th>Due date</th>
             <th>Country</th>
             <th>Status</th>
+            <th>Last updated</th>
           </tr>
         </thead>
         <tbody>
@@ -384,6 +412,9 @@ function OrderTable({ orders, selected, onToggleOne, onToggleAll, onOpen }) {
                 <span className={STATUS_STYLES[order.status] ?? 'pill pill-plain pill-neutral'}>
                   {STATUS_LABELS[order.status] ?? order.status}
                 </span>
+              </td>
+              <td className="cell-sub" title={new Date(order.lastUpdated).toLocaleString()}>
+                {relativeTime(order.lastUpdated)}
               </td>
             </tr>
           ))}

@@ -41,7 +41,7 @@ body {
 /* ---------- page ---------- */
 
 .content {
-  max-width: 1000px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 30px 20px 72px;
 }
@@ -181,7 +181,7 @@ tbody tr.row-selected {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 940px;
+  min-width: 1040px;
 }
 
 thead th {
@@ -292,11 +292,13 @@ tbody tr:hover {
 .form-card {
   padding: 18px;
   margin-bottom: 16px;
+  overflow: visible;
   animation: form-slide-down 240ms cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
 }
 
 @keyframes form-slide-down {
   from {
+    overflow: hidden;
     opacity: 0;
     max-height: 0;
     margin-bottom: 0;
@@ -305,6 +307,7 @@ tbody tr:hover {
     transform: translateY(-6px);
   }
   to {
+    overflow: hidden;
     opacity: 1;
     max-height: 520px;
     margin-bottom: 16px;
@@ -464,6 +467,7 @@ tbody tr.row-link {
 
 .detail-card {
   padding: 18px;
+  overflow: visible;
 }
 
 .section-title {
@@ -581,4 +585,78 @@ tbody tr.row-link {
 
 .detail-card .muted {
   margin-bottom: 4px;
+}
+
+.pill-warn {
+  background: #fff1cf;
+  color: #7a4f01;
+}
+
+.country-select {
+  position: relative;
+}
+
+.country-input-invalid {
+  border-color: var(--risk-text);
+}
+
+.country-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.country-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.country-option-active {
+  background: #eef4ff;
+}
+
+.country-flag {
+  flex: none;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.country-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.country-code {
+  flex: none;
+  color: var(--text-faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.country-empty {
+  padding: 10px 8px;
+  color: var(--text-muted);
 }

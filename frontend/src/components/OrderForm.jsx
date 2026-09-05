@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { ApiError, createOrder } from '../api/client';
+import CountrySelect from './CountrySelect';
 
 const EMPTY = {
   productCode: '',
@@ -89,8 +90,11 @@ export default function OrderForm({ closing, onCreated, onCancel, onExited }) {
                  placeholder="100" />)}
 
         {field('countryCode', 'Country',
-          <input className="input" value={form.countryCode} onChange={update('countryCode')}
-                 placeholder="ID" maxLength={2} />)}
+          <CountrySelect
+            value={form.countryCode}
+            invalid={Boolean(fieldErrors.countryCode)}
+            onChange={(code) => setForm({ ...form, countryCode: code })}
+          />)}
 
         {field('startDate', 'Start date',
           <input className="input" type="date" value={form.startDate} onChange={update('startDate')} />)}
