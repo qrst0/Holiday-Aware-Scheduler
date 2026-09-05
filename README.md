@@ -98,6 +98,17 @@ Query params on list: `search`, `status`, `countryCode`, `riskFlag`, `page`, `si
 - `search` matches product code only, case-insensitive substring.
 - `countryCode` is a case-insensitive substring.
 
+Every order response carries `holidaySource`:
+
+| Value | Meaning |
+|---|---|
+| `LIVE` | Fetched from Nager on this request |
+| `CACHE_FRESH` | Served from the database cache |
+| `CACHE_STALE` | API unreachable, served from an expired cacheal |
+| `UNAVAILABLE` | No holiday data at all, weekends only |
+
+The first order for a country and year returns `LIVE`, every one after returns `CACHE_FRESH`.
+
 All errors are RFC 7807 `application/problem+json`, with field errors keyed by field name:
 
 ```json
@@ -136,6 +147,7 @@ All errors are RFC 7807 `application/problem+json`, with field errors keyed by f
 **Order detail page**
 - Route `/orders/{id}`, deep linkable.
 - Shows working days available vs needed, the holidays inside the window, and the earliest safe due date.
+- Warns when the holiday data is stale or unavailable, so a degraded flag is never presented as a certain one.
 
 ![Order detail](docs/order-detail.png)
 
