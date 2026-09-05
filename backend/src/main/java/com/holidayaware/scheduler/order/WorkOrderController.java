@@ -11,6 +11,7 @@ import com.holidayaware.scheduler.order.dto.UpdateOrderRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,7 +47,8 @@ class WorkOrderController {
             @RequestParam(required = false) OrderStatus status,
             @RequestParam(required = false) String countryCode,
             @RequestParam(required = false) RiskFlag riskFlag,
-            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+            @PageableDefault(size = 20, sort = "lastUpdated", direction = Sort.Direction.DESC)
+            Pageable pageable) {
         return service.list(search, status, countryCode, riskFlag, pageable);
     }
 

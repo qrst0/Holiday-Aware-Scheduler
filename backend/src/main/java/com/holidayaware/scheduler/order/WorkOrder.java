@@ -1,5 +1,6 @@
 package com.holidayaware.scheduler.order;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -49,6 +50,9 @@ class WorkOrder {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "last_updated", nullable = false)
+    private Instant lastUpdated;
+
     protected WorkOrder() {
     }
 
@@ -62,6 +66,7 @@ class WorkOrder {
         this.requiredDays = requiredDays;
         this.status = status;
         this.createdAt = createdAt;
+        this.lastUpdated = Instant.now();
     }
 
     Long getId() {
@@ -109,10 +114,20 @@ class WorkOrder {
         this.dueDate = dueDate;
         this.requiredDays = requiredDays;
         this.status = status;
+        this.lastUpdated = Instant.now();
+    }
+
+    void backdate(LocalDateTime createdAt, Instant lastUpdated) {
+        this.createdAt = createdAt;
+        this.lastUpdated = lastUpdated;
     }
 
     void setRiskFlag(RiskFlag riskFlag) {
         this.riskFlag = riskFlag;
+    }
+
+    Instant getLastUpdated() {
+        return lastUpdated;
     }
 
     LocalDateTime getCreatedAt() {

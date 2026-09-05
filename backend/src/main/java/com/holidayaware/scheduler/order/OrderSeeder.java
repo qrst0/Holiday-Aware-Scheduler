@@ -1,10 +1,15 @@
 package com.holidayaware.scheduler.order;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import java.time.temporal.ChronoUnit;
+
 import com.holidayaware.scheduler.order.dto.CreateOrderRequest;
+import com.holidayaware.scheduler.order.dto.OrderResponse;
 
 import org.springframework.stereotype.Component;
 
@@ -27,7 +32,9 @@ public class OrderSeeder {
     public int seed(int count) {
         int created = 0;
         for (int i = 0; i < count; i++) {
-            workOrderService.create(randomOrder());
+            CreateOrderRequest request = randomOrder();
+            OrderResponse response = workOrderService.create(request);
+            backdate(response.id(), request.startDate());
             created++;
         }
         return created;
@@ -35,6 +42,27 @@ public class OrderSeeder {
 
     public long count() {
         return repository.count();
+    }
+
+    private void backdate(Long id, LocalDate startDate) {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime productionStart = startDate.atStartOfDay();
+        LocalDateTime ceiling = productionStart.isBefore(now) ? productionStart : now;
+
+        LocalDateTime createdAt = ceiling
+                .minusDays(random.nextInt(5, 60))
+                .withHour(random.nextInt(8, 18))
+                .withMinute(random.nextInt(0, 60));
+
+        long slackMinutes = Math.max(1, ChronoUnit.MINUTES.between(createdAt, ceiling));
+        LocalDateTime updatedAt = createdAt.plusMinutes(random.nextLong(0, slackMinutes));
+
+        repository.findById(id).ifPresent(order -> {
+            order.backdate(createdAt, updatedAt.atZone(ZoneId.systemDefault()).toInstant());
+            repository.save(order);
+        });
     }
 
     private CreateOrderRequest randomOrder() {

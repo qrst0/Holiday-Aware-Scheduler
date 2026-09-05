@@ -194,6 +194,7 @@ class WorkOrderService {
                 window.source(),
                 window.holidays(),
                 suggestedDueDateFor(order),
+                order.getLastUpdated(),
                 order.getCreatedAt());
     }
 }

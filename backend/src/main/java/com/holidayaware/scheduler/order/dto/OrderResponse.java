@@ -1,5 +1,6 @@
 package com.holidayaware.scheduler.order.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,5 +24,6 @@ public record OrderResponse(
         HolidaySource holidaySource,
         List<PublicHoliday> holidaysInWindow,
         LocalDate suggestedDueDate,
+        Instant lastUpdated,
         LocalDateTime createdAt) {
 }
