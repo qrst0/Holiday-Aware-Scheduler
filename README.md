@@ -134,7 +134,7 @@ All errors are RFC 7807 `application/problem+json`, with field errors keyed by f
 | P2 | Cross-year windows |
 | P2 | Suggest earliest safe due date |
 
-## ➕ Extras
+## ➕ Features
 
 **Pagination**
 - Server-side, 10 per page, capped at 100.
